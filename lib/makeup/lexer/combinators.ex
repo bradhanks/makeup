@@ -125,16 +125,33 @@ end
     Enum.sort(items, fn a, b -> {byte_size(a), a} > {byte_size(b), b} end)
   end
 
-  @doc """
-  Matches one of the literal strings in the list.
+ @doc """
+Selectively matches one of the specified literal strings from a list, prioritizing longer strings.
 
-  The strings aren't matched in order: they are automatically sorted in a way
-  that guarantees that the longest strings will be tried first.
+This function is designed to match against a provided list of string literals, ensuring that the longest possible match is attempted first. This is particularly useful in situations where some strings in the list are prefixes of others. By sorting the strings so that the longest ones are tried first, it avoids partial or incorrect matches.
 
-  ## Examples
+The function can be a valuable tool in lexer development for matching reserved words or specific syntax elements, like keywords in a programming language.
 
-      keywords = word_from_list(~w[do end catch after rescue])
-  """
+## Parameters
+- `words`: A list of string literals to be matched.
+
+## Examples
+
+```elixir
+defmodule MyLexerTest do
+  use ExUnit.Case
+  alias Makeup.Lexer.Combinators
+
+  test "match longest string from list" do
+    # Given a list of keywords
+    keywords = Combinators.word_from_list(~w[do end catch after rescue])
+
+    # The function will prioritize longer keywords like "rescue" over shorter ones like "do"
+    # when matching
+  end
+end
+```
+"""
   def word_from_list(words) do
     choice(for word <- reverse_sort(words), do: string(word))
   end
