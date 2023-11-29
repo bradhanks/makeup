@@ -4,23 +4,58 @@ defmodule Makeup.Lexer.Combinators do
   """
   import NimbleParsec
 
-  @doc """
-  Wraps the given combinator into a token of the given `ttype`.
+@doc """
+Converts a given string literal or combinator into a token of a specific type, optionally adding attributes.
 
-  Instead of a combinator, the first argument can also be a string literal.
-  """
+This function serves two purposes: it either wraps a string literal directly into a token, or it applies a combinator and then assigns the token type to its result. It's especially useful in lexer development, where tokens need to be categorized for syntax highlighting or parsing.
+
+The function is overloaded to handle different scenarios:
+- `token(literal, token_type)` for string literals.
+- `token(combinator, token_type)` for combinators.
+- `token(literal/combinator, token_type, attrs)` when additional attributes are to be added.
+
+## Parameters
+- `literal/combinator`: A string literal or a combinator that defines the content of the token.
+- `token_type`: The type to be assigned to the token.
+- `attrs` (optional): A map of attributes to be associated with the token.
+
+## Examples
+
+```elixir
+defmodule MyLexerTest do
+  use ExUnit.Case
+  alias Makeup.Lexer.Combinators
+
+  test "token from literal" do
+    # Wrap a string literal as a keyword token
+    assert Combinators.token("if", :keyword) == {:keyword, %{}, "if"}
+  end
+
+  test "token from combinator with attributes" do
+    # Apply a combinator and assign a token type with attributes
+    combinator = some_combinator_function()
+    attrs = %{color: "blue"}
+    assert Combinators.token(combinator, :custom_type, attrs) == expected_token_output
+  end
+end
+```
+"""
+  # Converts a string literal into a token with the given type.
   def token(literal, token_type) when is_binary(literal) do
     replace(string(literal), {token_type, %{}, literal})
   end
 
+  # Applies the given combinator and then assigns the token type.
   def token(combinator, token_type) do
     combinator |> post_traverse({__MODULE__, :__token__, [token_type]})
   end
 
+  # Converts a string literal into a token with the given type and attributes.
   def token(literal, token_type, attrs) when is_binary(literal) and is_map(attrs) do
     replace(string(literal), {token_type, attrs, literal})
   end
 
+  # Applies the given combinator, assigns the token type, and attaches the attributes.
   def token(combinator, token_type, attrs) when is_map(attrs) do
     combinator |> post_traverse({__MODULE__, :__token__, [token_type, attrs]})
   end
