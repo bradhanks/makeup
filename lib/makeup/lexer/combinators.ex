@@ -60,14 +60,31 @@ end
     combinator |> post_traverse({__MODULE__, :__token__, [token_type, attrs]})
   end
 
-  @doc """
-  Joins the result of the given combinator into a single string.
+@doc """
+Transforms the output of a given combinator into a single, concatenated string token.
 
-  This is not usually necessary, but it can be useful if you want to match on the tokens.
-  It's easier to match on the token `{:keyword, %{}, "unquote"}` than on something like
-  `{:keyword, %{}, ["u", "nquote"]}`, even though both tokens will be treated the same way
-  by the formatter.
-  """
+This function is particularly useful when the combinator's output is an iolist or a list of strings, and you need a single, consolidated string for easier token matching and processing. By converting the list into a single string, it simplifies the structure of the token, making it more straightforward to handle further.
+
+For example, instead of dealing with a token represented as `{:keyword, %{}, ["u", "n", "q", "u", "o", "t", "e"]}`, which is a list of characters, `lexeme` will produce `{:keyword, %{}, "unquote"}`, a more manageable single string representation. This is particularly beneficial when tokens need to be matched or compared as complete strings rather than as segmented lists.
+
+## Parameters
+- `combinator`: The combinator whose output will be joined into a single string.
+
+## Examples
+
+```elixir
+defmodule MyLexerTest do
+  use ExUnit.Case
+  alias Makeup.Lexer.Combinators
+
+  test "convert combinator output to single string" do
+    combinator = some_combinator_function()
+    # Assuming combinator outputs ["u", "n", "q", "u", "o", "t", "e"]
+    assert Combinators.lexeme(combinator) == {:keyword, %{}, "unquote"}
+  end
+end
+```
+"""
   def lexeme(combinator) do
     combinator |> post_traverse({__MODULE__, :__lexeme__, []})
   end
