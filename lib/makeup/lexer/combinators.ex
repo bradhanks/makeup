@@ -185,11 +185,35 @@ end
     choice(for word <- reverse_sort(words), do: string(word)) |> token(ttype, attrs)
   end
 
-  @doc """
-  Matches a given combinator, repeated 0 or more times, surrounded by left and right delimiters.
+ @doc """
+Repeats a given combinator within specified left and right delimiters.
 
-  Delimiters can be combinators or literal strings (either both combinators or both literal strings).
-  """
+This function is used to parse sequences where a particular pattern (defined by a combinator) is repeated zero or more times and is enclosed within specified delimiters. These delimiters can either be string literals or combinators themselves. The function ensures that the entire enclosed sequence is correctly parsed as a single unit.
+
+It's particularly useful in scenarios like parsing nested structures (e.g., parentheses in expressions, brackets in lists) or repeated patterns (e.g., items in a comma-separated list).
+
+## Parameters
+- `combinator`: The combinator that defines the pattern to be repeated within the delimiters.
+- `left`: The left delimiter as a string or combinator.
+- `right`: The right delimiter as a string or combinator.
+
+## Example
+
+```elixir
+defmodule MyLexerTest do
+  use ExUnit.Case
+  alias Makeup.Lexer.Combinators
+
+  test "parse repeated pattern within delimiters" do
+    # Example for parsing a comma-separated list enclosed in brackets
+    # Assuming item_combinator is a combinator that matches an individual list item
+    list_parser = Combinators.many_surrounded_by(regex(~r/^[a-zA-Z0-9]+/), "[", "]")
+    
+    # The list_parser will now match patterns like "[item1, item2, item3]"
+  end
+end
+```
+"""
   def many_surrounded_by(combinator, left, right) when is_binary(left) and is_binary(right) do
     token(left, :punctuation)
     |> concat(
