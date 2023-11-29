@@ -19,7 +19,7 @@ The function is overloaded to handle different scenarios:
 - `token_type`: The type to be assigned to the token.
 - `attrs` (optional): A map of attributes to be associated with the token.
 
-## Examples
+## Example
 
 ```elixir
 defmodule MyLexerTest do
@@ -30,21 +30,31 @@ defmodule MyLexerTest do
     # Wrap a string literal as a keyword token
     assert Combinators.token("if", :keyword) == {:keyword, %{}, "if"}
   end
-
-  test "token from combinator with attributes" do
-    # Apply a combinator and assign a token type with attributes
-    combinator = some_combinator_function()
-    attrs = %{color: "blue"}
-    assert Combinators.token(combinator, :custom_type, attrs) == expected_token_output
-  end
-end
 ```
 """
   # Converts a string literal into a token with the given type.
   def token(literal, token_type) when is_binary(literal) do
     replace(string(literal), {token_type, %{}, literal})
   end
+"""
+## Example
 
+```elixir
+defmodule MyLexerTest do
+  use ExUnit.Case
+  alias Makeup.Lexer.Combinators
+
+  test "token from combinator with attributes" do
+    # Apply a combinator and assign a token type with attributes
+    # Let's assume the combinator is applied to a string like "123"
+    combinator = regex(~r/^\d+/)
+    attrs = %{color: "blue"}
+    assert Combinators.token(combinator, :custom_type, attrs) == {:custom_type, %{color: "blue"}, "123"}
+  end
+end
+end
+```
+"""
   # Applies the given combinator and then assigns the token type.
   def token(combinator, token_type) do
     combinator |> post_traverse({__MODULE__, :__token__, [token_type]})
